@@ -1,0 +1,82 @@
+module risc_top_1 (
+    input clk,
+    input start
+);
+
+// -------- wires --------
+wire [31:0] PC_out_IF;
+wire [31:0] instruction;
+
+// IF/ID
+wire [31:0] instruction_ID;
+wire [31:0] PC_in_ID;
+
+// Register file
+wire [31:0] op1, op2;
+
+// ALU
+wire [31:0] ALU_result;
+wire [3:0] ALU_sel;
+
+wire reg_write;
+wire mem_read;
+wire mem_write;
+
+
+// -------- IF STAGE --------
+IF IF_stage (
+    .PC_initializing_address(32'h00000000),
+    .branch_PC(32'h00000000),
+    .is_branch_taken(1'b0),
+    .start(start),
+    .clk(clk),
+    .PC_out_IF(PC_out_IF)
+);
+
+// -------- INSTRUCTION MEMORY --------
+instruction_mem IM (
+    .PC_out_IF(PC_out_IF),
+    .Instruction_out_IF(instruction)
+);
+
+// -------- IF/ID --------
+IF_ID_reg IF_ID (
+    .clk(clk),
+    .PC_out_IF(PC_out_IF),
+    .Instruction_out_IF(instruction),
+    .PC_in_ID(PC_in_ID),
+    .Instruction_in_ID(instruction_ID)
+);
+
+// -------- REGISTER FILE --------
+register_file RF (
+    .clk(clk),
+    .we(reg_write),   // ? NOW CONTROLLED
+
+    .rs1(instruction_ID[25:21]),
+    .rs2(instruction_ID[20:16]),
+    .rd(instruction_ID[15:11]),
+
+    .write_data(ALU_result),
+
+    .op1(op1),
+    .op2(op2)
+);
+
+// -------- ALU --------
+ALU alu_unit (
+    .A(op1),     // ? FIXED
+    .B(op2),     // ? FIXED
+    .ALU_sel(ALU_sel),
+    .ALU_out(ALU_result)
+);
+
+//----------Control Unit-------
+control_unit CU (
+    .Instruction_in_ID(instruction_ID),
+    .ALU_sel(ALU_sel),
+    .reg_write(reg_write),
+    .mem_read(mem_read),
+    .mem_write(mem_write)
+);
+endmodule
