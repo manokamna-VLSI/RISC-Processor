@@ -1,0 +1,18 @@
+module instruction_mem(
+    input  [31:0] PC_out_IF,
+    output reg [31:0] Instruction_out_IF
+);
+
+reg [31:0] memory [0:1023];   // 1024 instructions
+
+// Load instructions from file
+initial begin
+   $readmemb("instrn.txt", memory);
+end
+
+// Combinational read
+always @(*) begin
+    Instruction_out_IF = memory[PC_out_IF[9:2]];
+end
+
+endmodule

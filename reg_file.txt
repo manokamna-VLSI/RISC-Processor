@@ -1,0 +1,36 @@
+module register_file(
+input clk,
+input we,
+
+input [4:0] rs1,
+input [4:0] rs2,
+input [4:0] rd,
+
+input [31:0] write_data,
+
+output [31:0] op1,
+output [31:0] op2
+);
+
+reg [31:0] registers [31:0];
+integer i;   
+
+initial begin
+    registers[0] = 0;
+    registers[1] = 10;
+    registers[2] = 20;
+    registers[3] = 5;
+    registers[4] = 15;
+end
+
+
+assign op1 = registers[rs1];
+assign op2 = registers[rs2];
+
+always @(posedge clk)
+begin
+if(we)
+registers[rd] <= write_data;
+end
+
+endmodule
